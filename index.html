@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    <title>待办事项</title>
+    <link rel="stylesheet" href="bootstrap.css">
+    <style>
+    *{
+        font-family: "微软雅黑"；
+    }
+        .container{
+            border:1px solid #ccc;
+            height:660px;
+            background: url(images/db-bg.jpg)  no-repeat;
+            background-size:100% 100%;
+        }
+        .top,.bottom{
+            width:60%;
+            margin:20px auto;
+        }
+        .del{
+            width:30px;
+            height:30px;
+            text-align: center;
+            line-height: 25px;
+            float: right;
+            cursor: pointer;
+            /*margin-right:20px;*/
+        }
+         img{
+            width:25px;
+         }
+        [type=checkbox]{
+            float: left;
+        }
+        ul{
+            list-style: none;
+            background:#fff;
+            max-height:200px;
+            min-height:100px; 
+            overflow: auto;
+            padding:0 20px;
+            border-radius: 10px;
+        }
+        li{
+            line-height: 30px;
+            padding:0 10px 0 15px;
+            border-radius: 10px;
+        }
+        
+        li:hover{
+            background:#FF8F2A;
+            color:#fff;
+            cursor: pointer;
+        }
+        li span:hover{
+            cursor: auto;
+        }
+        .done li{
+            color: #666;
+            text-decoration: line-through;
+        }
+        .no,.yes{
+            line-height: 30px;
+            font-weight: bold;
+            font-size:30px;
+        }
+        h3{
+            font-size:36px;
+            color:#000;
+            text-align: center;
+            font-weight: bold;
+            padding-top:20px;
+        }
+        @media (min-width: 1200px) {
+            .container {
+                width: 1000px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <h3>待办事项</h3>
+        <hr>
+        <form class="navbar-form top" role="search">
+            <div class="form-group">
+                待办事项：<input type="text" class="form-control content" placeholder="请输入待办事项">
+            </div>
+            <button type="submit" class="btn btn-success sub">提交</button>
+            <button type="button" class="btn btn-danger clear">全部清空</button>
+        </form>
+  
+    <div class="bottom">
+        <div class="no">
+            还未完成
+            <i class="count1">0</i>
+        </div>
+        <ul class="not"></ul>
+        <div class="yes">
+            已经完成
+            <i class="count2">0</i>
+        </div>
+        <ul class="done"></ul>
+    </div>
+</div>
+</body>
+
+<script src="jquery.js"></script>
+<!--<script src="touch.js"></script>-->
+<script src="basic.js"></script>
+<script>
+    function getData() {
+        var arr=localStorage.content?JSON.parse(localStorage.content):[];
+        return arr;
+    }
+    function saveData(data) {
+        localStorage.content=JSON.stringify(data);
+    };
+    function changestate() {
+        var data=getData();
+        var index=$(this).parent().attr("index");
+        data[index].done=!data[index].done;
+        saveData(data);
+        rewrite();
+    }
+
+    function rewrite(){
+        $(".done,.not").empty();
+        var data=getData();
+        var i=0;
+        var j=0;
+        $.each(data,function (index,value) {
+            if(value.done){
+                $("<li>").attr("index",index).html('<input type="checkbox" data-role="content" onfocus="changestate.call(this)"><span contenteditable="true" data-role="content">'+value.content+'</span><img src="images/laji.png" class="del" alt="删除">').appendTo(".done");
+                j++;
+            }else{
+            $("<li>").attr("index",index).html('<input type="checkbox" data-role="content" onfocus="changestate.call(this)"><span contenteditable="true" data-role="content">'+value.content+'</span><img src="images/laji.png" class="del" alt="删除">').appendTo(".not");
+                i++;
+            }
+            $(".count1").text(i);
+            $(".count2").text(j);
+        });
+    }
+    rewrite();
+    $(".sub").click(function (e) {
+        e.preventDefault();
+        var value=$(".content").val();
+        if(value==""){
+            return;
+        }
+        var data=getData();
+        data.push({content:value,done:false})
+        saveData(data);
+        rewrite();
+    });
+
+    $("ul").delegate(".del","click",function () {
+        var data=getData();
+        var index=$(this).parent().attr("index");
+        $(this).parent().remove();
+        data.splice(index,1);
+        saveData(data);
+        rewrite();
+    })
+
+    $("ul").on('blur','[contenteditable=true]',function () {
+        var data=getData();
+        var index=$(this).parent().attr("index");
+        var attr=$(this).attr("data-role");
+        var value=$(this).html();
+        console.log(index);
+        data[index][attr]=value;
+        saveData(data);
+    })
+
+    $(".clear").click(function () {
+        alert("确定要全部清空吗？");
+        $(".done,.not").empty();
+        localStorage.clear();
+        $(".count1").text(0);
+        $(".count2").text(0);
+
+    });
+//    touch.on(".sub","tap",function () {
+//        var value=$(".content").val();
+//        if(value==""){
+//            return;
+//        }
+//        var data=getData();
+//        data.push({content:value,done:false})
+//        saveData(data);
+//        rewrite();
+//    });
+//    touch.on(".clear","tap",function () {
+//        var value=$(".content").val();
+//        if(value==""){
+//            return;
+//        }
+//        var data=getData();
+//        data.push({content:value,done:false})
+//        saveData(data);
+//        rewrite();
+//    });
+
+</script>
+</html>
